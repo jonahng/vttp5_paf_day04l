@@ -2,6 +2,7 @@ package com.jonah.vttp5_paf_day04l.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.jonah.vttp5_paf_day04l.exception.AccountInactive;
 import com.jonah.vttp5_paf_day04l.exception.InsufficientBalanceException;
@@ -22,12 +23,28 @@ public class BankAccountService {
         return bankAccountRepo.getAccountById(accountId);
     }
 
-    public void transfer(int transfererAccountId, int transfereeAccountId, float transferAmount){
+    @Transactional
+    public Boolean transfer(int transfererAccountId, int transfereeAccountId, float transferAmount){
         //retrieve both accounts
         //check accounts active
         //checl transferrer has enough balance
         BankAccount accountFrom = bankAccountRepo.getAccountById(transfererAccountId);
         BankAccount accountTo = bankAccountRepo.getAccountById(transfereeAccountId);
+
+        Boolean isAccountFromActive = checkAccountActive(accountFrom);
+        Boolean isAccountToActive = checkAccountActive(accountTo);
+
+        Boolean isTransferBalanceSufficient = checkSufficientBalance(accountFrom, transferAmount);
+
+        if(isAccountFromActive && isAccountToActive && isTransferBalanceSufficient){
+            accountFrom.setBalance(accountFrom.getBalance()-transferAmount);
+            bankAccountRepo.updateAccountById(accountFrom);
+            accountTo.setBalance(accountTo.getBalance()+transferAmount);
+            bankAccountRepo.updateAccountById(accountTo);
+            return true;
+        }
+        return false;
+        
     }
 
     private Boolean checkAccountActive(BankAccount account){
