@@ -17,9 +17,10 @@ public class ReservationService {
     @Transactional
     public boolean createReservationRecord(Reservation reservation, ReservationDetail reservationDetail){
         Boolean bCreated = false;
-        reservationRepo.createReservation(reservation);
+        int iReservationId = reservationRepo.createReservation(reservation);
         //To simulate error,  
         //throw new IllegalArgumentException("just a fake error");
+        reservationDetail.getReservation().setId(iReservationId);
         reservationRepo.createReservationDetails(reservationDetail);
         bCreated = true;
         return bCreated;
